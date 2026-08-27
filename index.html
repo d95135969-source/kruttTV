@@ -1,1 +1,1389 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+    <title>КрутТВ — Прямой эфир</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            margin: 0;
+            padding: 0;
+            min-height: 100%;
+        }
+
+        body {
+            background:
+                radial-gradient(
+                    circle at top,
+                    rgba(14, 165, 233, 0.18),
+                    transparent 35%
+                ),
+                linear-gradient(
+                    135deg,
+                    #020617,
+                    #0f172a 50%,
+                    #111827
+                );
+
+            color: #f8fafc;
+            font-family:
+                "Segoe UI",
+                Roboto,
+                Arial,
+                sans-serif;
+        }
+
+        .page {
+            width: min(1200px, calc(100% - 24px));
+            margin: 0 auto;
+            padding: 25px 0 40px;
+        }
+
+        /* ==================================================
+           ШАПКА
+           ================================================== */
+
+        .header {
+            text-align: center;
+            margin-bottom: 22px;
+        }
+
+        .logo {
+            margin: 0;
+            font-size: clamp(2.5rem, 7vw, 4.5rem);
+            font-weight: 900;
+            letter-spacing: 2px;
+            color: #38bdf8;
+
+            text-shadow:
+                0 0 10px rgba(56, 189, 248, 0.45),
+                0 0 35px rgba(56, 189, 248, 0.15);
+        }
+
+        .live-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+
+            margin-top: 8px;
+            padding: 7px 14px;
+
+            border-radius: 999px;
+
+            background: #dc2626;
+
+            color: white;
+
+            font-size: 0.9rem;
+            font-weight: 800;
+
+            letter-spacing: 1px;
+            text-transform: uppercase;
+
+            animation: livePulse 1.5s infinite;
+        }
+
+        .live-dot {
+            width: 9px;
+            height: 9px;
+
+            border-radius: 50%;
+
+            background: white;
+        }
+
+        @keyframes livePulse {
+            50% {
+                opacity: 0.6;
+            }
+        }
+
+        .subtitle {
+            margin-top: 14px;
+
+            color: #94a3b8;
+
+            font-size: 1.05rem;
+            font-weight: 500;
+        }
+
+        /* ==================================================
+           ПЛЕЕР
+           ================================================== */
+
+        .player-card {
+            width: 100%;
+            overflow: hidden;
+
+            border-radius: 18px;
+
+            background: #000;
+
+            box-shadow:
+                0 25px 80px rgba(0, 0, 0, 0.5),
+                0 0 0 1px rgba(148, 163, 184, 0.08);
+        }
+
+        .video-container {
+            position: relative;
+
+            width: 100%;
+            aspect-ratio: 16 / 9;
+
+            background: #000;
+        }
+
+        #tv-player {
+            position: absolute;
+
+            top: 0;
+            left: 0;
+
+            width: 100%;
+            height: 100%;
+
+            border: 0;
+
+            display: block;
+        }
+
+        /* ==================================================
+           КНОПКИ
+           ================================================== */
+
+        .controls {
+            display: flex;
+
+            justify-content: center;
+            align-items: center;
+
+            flex-wrap: wrap;
+
+            gap: 12px;
+
+            padding: 18px;
+
+            background: #0f172a;
+        }
+
+        .btn {
+            border: none;
+
+            border-radius: 10px;
+
+            padding: 12px 20px;
+
+            background: #0284c7;
+
+            color: white;
+
+            font-size: 1rem;
+            font-weight: 700;
+
+            cursor: pointer;
+
+            transition:
+                background 0.2s ease,
+                transform 0.2s ease;
+        }
+
+        .btn:hover {
+            background: #0369a1;
+            transform: translateY(-1px);
+        }
+
+        .btn.secondary {
+            background: #334155;
+        }
+
+        .btn.secondary:hover {
+            background: #475569;
+        }
+
+        /* ==================================================
+           ТЕКУЩАЯ ПРОГРАММА
+           ================================================== */
+
+        .now-playing {
+            margin-top: 22px;
+
+            padding: 20px;
+
+            text-align: center;
+
+            border-radius: 15px;
+
+            background: rgba(15, 23, 42, 0.85);
+
+            border:
+                1px solid
+                rgba(148, 163, 184, 0.12);
+        }
+
+        .now-label {
+            color: #94a3b8;
+
+            font-size: 0.9rem;
+
+            text-transform: uppercase;
+
+            letter-spacing: 1px;
+        }
+
+        .current-title {
+            margin-top: 8px;
+
+            color: #38bdf8;
+
+            font-size: 1.5rem;
+            font-weight: 800;
+        }
+
+        .current-time {
+            margin-top: 7px;
+
+            color: #cbd5e1;
+
+            font-size: 0.95rem;
+        }
+
+        /* ==================================================
+           ПЛЕЙЛИСТ
+           ================================================== */
+
+        .playlist-card {
+            margin-top: 22px;
+
+            padding: 22px;
+
+            border-radius: 15px;
+
+            background: rgba(15, 23, 42, 0.85);
+
+            border:
+                1px solid
+                rgba(148, 163, 184, 0.12);
+        }
+
+        .playlist-title {
+            margin: 0 0 16px;
+
+            font-size: 1.35rem;
+        }
+
+        .playlist-list {
+            display: grid;
+
+            gap: 10px;
+        }
+
+        .playlist-item {
+            display: grid;
+
+            grid-template-columns:
+                52px
+                1fr
+                auto;
+
+            align-items: center;
+
+            gap: 14px;
+
+            padding: 13px;
+
+            border-radius: 12px;
+
+            background: rgba(30, 41, 59, 0.8);
+
+            border:
+                1px solid
+                rgba(148, 163, 184, 0.08);
+        }
+
+        .playlist-item.current {
+            background:
+                rgba(2, 132, 199, 0.18);
+
+            border-color:
+                rgba(56, 189, 248, 0.45);
+        }
+
+        .playlist-number {
+            width: 42px;
+            height: 42px;
+
+            display: flex;
+
+            justify-content: center;
+            align-items: center;
+
+            border-radius: 10px;
+
+            background: #1e293b;
+
+            color: #cbd5e1;
+
+            font-weight: 800;
+        }
+
+        .playlist-item.current .playlist-number {
+            background: #0284c7;
+            color: white;
+        }
+
+        .playlist-name {
+            font-weight: 700;
+        }
+
+        .playlist-duration {
+            margin-top: 4px;
+
+            color: #94a3b8;
+
+            font-size: 0.9rem;
+        }
+
+        .playlist-status {
+            color: #22c55e;
+
+            font-size: 0.85rem;
+
+            font-weight: 800;
+        }
+
+        /* ==================================================
+           ИНФОРМАЦИЯ
+           ================================================== */
+
+        .info {
+            display: grid;
+
+            grid-template-columns:
+                repeat(3, 1fr);
+
+            gap: 12px;
+
+            margin-top: 22px;
+        }
+
+        .info-card {
+            padding: 18px;
+
+            text-align: center;
+
+            border-radius: 14px;
+
+            background: rgba(15, 23, 42, 0.82);
+
+            border:
+                1px solid
+                rgba(148, 163, 184, 0.12);
+        }
+
+        .info-value {
+            color: #38bdf8;
+
+            font-size: 1.4rem;
+            font-weight: 800;
+        }
+
+        .info-label {
+            margin-top: 5px;
+
+            color: #94a3b8;
+
+            font-size: 0.9rem;
+        }
+
+        /* ==================================================
+           FOOTER
+           ================================================== */
+
+        .footer {
+            margin-top: 30px;
+
+            text-align: center;
+
+            color: #64748b;
+
+            font-size: 0.9rem;
+        }
+
+        /* ==================================================
+           ПОЛНЫЙ ЭКРАН
+           ================================================== */
+
+        .video-container:fullscreen {
+            width: 100vw;
+            height: 100vh;
+
+            aspect-ratio: auto;
+
+            border-radius: 0;
+        }
+
+        .video-container:fullscreen #tv-player {
+            width: 100%;
+            height: 100%;
+        }
+
+        /* ==================================================
+           МОБИЛЬНАЯ ВЕРСИЯ
+           ================================================== */
+
+        @media (max-width: 700px) {
+
+            .page {
+                width: calc(100% - 12px);
+                padding-top: 12px;
+            }
+
+            .controls {
+                padding: 12px;
+            }
+
+            .btn {
+                flex: 1 1 40%;
+            }
+
+            .playlist-item {
+                grid-template-columns:
+                    45px
+                    1fr;
+            }
+
+            .playlist-status {
+                grid-column: 2;
+            }
+
+            .info {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="page">
+
+    <!-- ==================================================
+         ЗАГОЛОВОК
+         ================================================== -->
+
+    <header class="header">
+
+        <h1 class="logo">
+            КрутТВ
+        </h1>
+
+        <div class="live-badge">
+            <span class="live-dot"></span>
+            Прямой эфир
+        </div>
+
+        <div
+            class="subtitle"
+            id="broadcastStatus">
+            Загрузка эфира...
+        </div>
+
+    </header>
+
+
+    <!-- ==================================================
+         ВИДЕО
+         ================================================== -->
+
+    <section class="player-card">
+
+        <div
+            class="video-container"
+            id="videoContainer">
+
+            <iframe
+                id="tv-player"
+                allow="autoplay; encrypted-media; fullscreen"
+                allowfullscreen
+                frameborder="0">
+            </iframe>
+
+        </div>
+
+
+        <!-- ==================================================
+             СОБСТВЕННЫЕ КНОПКИ
+             ================================================== -->
+
+        <div class="controls">
+
+            <button
+                class="btn"
+                id="soundBtn">
+
+                🔇 Включить звук
+
+            </button>
+
+
+            <button
+                class="btn"
+                id="fullscreenBtn">
+
+                📺 Полный экран
+
+            </button>
+
+
+            <button
+                class="btn secondary"
+                id="reloadBtn">
+
+                🔄 Обновить эфир
+
+            </button>
+
+        </div>
+
+    </section>
+
+
+    <!-- ==================================================
+         СЕЙЧАС В ЭФИРЕ
+         ================================================== -->
+
+    <section class="now-playing">
+
+        <div class="now-label">
+            Сейчас в эфире
+        </div>
+
+        <div
+            class="current-title"
+            id="currentTitle">
+
+            Загрузка...
+
+        </div>
+
+        <div
+            class="current-time"
+            id="currentTime">
+
+            --
+
+        </div>
+
+    </section>
+
+
+    <!-- ==================================================
+         ПЛЕЙЛИСТ
+         ================================================== -->
+
+    <section class="playlist-card">
+
+        <h2 class="playlist-title">
+            📺 Программа КрутТВ
+        </h2>
+
+        <div
+            class="playlist-list"
+            id="playlistList">
+
+            Загрузка плейлиста...
+
+        </div>
+
+    </section>
+
+
+    <!-- ==================================================
+         ИНФОРМАЦИЯ
+         ================================================== -->
+
+    <section class="info">
+
+        <div class="info-card">
+
+            <div
+                class="info-value"
+                id="programCount">
+
+                0
+
+            </div>
+
+            <div class="info-label">
+                Программ
+            </div>
+
+        </div>
+
+
+        <div class="info-card">
+
+            <div
+                class="info-value"
+                id="totalDuration">
+
+                0:00
+
+            </div>
+
+            <div class="info-label">
+                Длительность цикла
+            </div>
+
+        </div>
+
+
+        <div class="info-card">
+
+            <div
+                class="info-value"
+                id="clock">
+
+                --:--:--
+
+            </div>
+
+            <div class="info-label">
+                Текущее время
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <footer class="footer">
+        КрутТВ © 2026
+    </footer>
+
+</div>
+
+
+<script>
+
+    /* ==========================================================
+       КРУТТВ — ПЛЕЙЛИСТ
+
+       ТЕБЕ НУЖНО МЕНЯТЬ В ОСНОВНОМ ТОЛЬКО ЭТОТ БЛОК.
+
+       id       = ID видео YouTube
+       title    = название программы
+       duration = длительность В СЕКУНДАХ
+
+       Пример:
+       10 минут = 600
+       30 минут = 1800
+       1 час    = 3600
+
+       ========================================================== */
+
+    const PLAYLIST = [
+
+        {
+            id: "xcL-oGPxgCg",
+            title: "Маша и Медведь",
+            duration: 4264
+        }
+
+        /*
+        Чтобы добавить второе видео:
+
+        ,
+        {
+            id: "ID_ВИДЕО",
+            title: "Название программы",
+            duration: 1800
+        }
+
+        */
+
+    ];
+
+
+    /* ==========================================================
+       ЗАСТАВКА
+
+       true  = включена
+       false = выключена
+
+       ========================================================== */
+
+    const INTRO_ENABLED = true;
+
+    const INTRO_ID = "UbY3QIM69Ho";
+
+    const INTRO_DURATION = 11;
+
+    const INTRO_EVERY_MINUTES = 30;
+
+
+    /* ==========================================================
+       ЭЛЕМЕНТЫ СТРАНИЦЫ
+       ========================================================== */
+
+    const player =
+        document.getElementById("tv-player");
+
+    const videoContainer =
+        document.getElementById("videoContainer");
+
+    const soundBtn =
+        document.getElementById("soundBtn");
+
+    const fullscreenBtn =
+        document.getElementById("fullscreenBtn");
+
+    const reloadBtn =
+        document.getElementById("reloadBtn");
+
+    const currentTitle =
+        document.getElementById("currentTitle");
+
+    const currentTime =
+        document.getElementById("currentTime");
+
+    const broadcastStatus =
+        document.getElementById("broadcastStatus");
+
+    const playlistList =
+        document.getElementById("playlistList");
+
+    const programCount =
+        document.getElementById("programCount");
+
+    const totalDurationElement =
+        document.getElementById("totalDuration");
+
+    const clock =
+        document.getElementById("clock");
+
+
+    /* ==========================================================
+       СОСТОЯНИЕ
+       ========================================================== */
+
+    let isMuted = true;
+
+    let lastVideoId = "";
+
+    let introPlaying = false;
+
+
+    /* ==========================================================
+       URL YOUTUBE
+       ========================================================== */
+
+    function youtubeEmbedUrl(
+        videoId,
+        startSeconds = 0
+    ) {
+
+        return (
+            "https://www.youtube.com/embed/" +
+            videoId +
+
+            "?autoplay=1" +
+
+            "&start=" +
+            Math.floor(startSeconds) +
+
+            "&mute=" +
+            (isMuted ? "1" : "0") +
+
+            "&controls=0" +
+
+            "&rel=0" +
+
+            "&iv_load_policy=3" +
+
+            "&disablekb=1" +
+
+            "&playsinline=1" +
+
+            "&enablejsapi=1"
+        );
+
+    }
+
+
+    /* ==========================================================
+       ФОРМАТ ВРЕМЕНИ
+       ========================================================== */
+
+    function formatDuration(seconds) {
+
+        seconds =
+            Math.max(
+                0,
+                Math.floor(seconds)
+            );
+
+
+        const hours =
+            Math.floor(seconds / 3600);
+
+
+        const minutes =
+            Math.floor(
+                (seconds % 3600) / 60
+            );
+
+
+        const secs =
+            seconds % 60;
+
+
+        if (hours > 0) {
+
+            return (
+                hours +
+                ":" +
+                String(minutes)
+                    .padStart(2, "0") +
+                ":" +
+                String(secs)
+                    .padStart(2, "0")
+            );
+
+        }
+
+
+        return (
+            minutes +
+            ":" +
+            String(secs)
+                .padStart(2, "0")
+        );
+
+    }
+
+
+    /* ==========================================================
+       ОБЩАЯ ДЛИТЕЛЬНОСТЬ
+       ========================================================== */
+
+    function getTotalDuration() {
+
+        return PLAYLIST.reduce(
+            function(sum, item) {
+
+                return (
+                    sum +
+                    Number(item.duration || 0)
+                );
+
+            },
+            0
+        );
+
+    }
+
+
+    /* ==========================================================
+       ОТОБРАЖЕНИЕ ПЛЕЙЛИСТА
+       ========================================================== */
+
+    function renderPlaylist(
+        currentIndex = -1
+    ) {
+
+        playlistList.innerHTML = "";
+
+
+        PLAYLIST.forEach(
+            function(item, index) {
+
+                const row =
+                    document.createElement(
+                        "div"
+                    );
+
+
+                row.className =
+                    "playlist-item" +
+                    (
+                        index === currentIndex
+                            ? " current"
+                            : ""
+                    );
+
+
+                const number =
+                    document.createElement(
+                        "div"
+                    );
+
+                number.className =
+                    "playlist-number";
+
+                number.textContent =
+                    index + 1;
+
+
+                const info =
+                    document.createElement(
+                        "div"
+                    );
+
+
+                const name =
+                    document.createElement(
+                        "div"
+                    );
+
+                name.className =
+                    "playlist-name";
+
+                name.textContent =
+                    item.title;
+
+
+                const duration =
+                    document.createElement(
+                        "div"
+                    );
+
+                duration.className =
+                    "playlist-duration";
+
+                duration.textContent =
+                    formatDuration(
+                        item.duration
+                    );
+
+
+                info.appendChild(name);
+
+                info.appendChild(duration);
+
+
+                const status =
+                    document.createElement(
+                        "div"
+                    );
+
+                status.className =
+                    "playlist-status";
+
+                status.textContent =
+                    index === currentIndex
+                        ? "СЕЙЧАС"
+                        : "";
+
+
+                row.appendChild(number);
+
+                row.appendChild(info);
+
+                row.appendChild(status);
+
+
+                playlistList.appendChild(row);
+
+            }
+        );
+
+
+        programCount.textContent =
+            PLAYLIST.length;
+
+
+        totalDurationElement.textContent =
+            formatDuration(
+                getTotalDuration()
+            );
+
+    }
+
+
+    /* ==========================================================
+       ОПРЕДЕЛЕНИЕ ТЕКУЩЕЙ ПРОГРАММЫ
+       ========================================================== */
+
+    function getCurrentProgram() {
+
+        if (PLAYLIST.length === 0) {
+
+            return null;
+
+        }
+
+
+        const totalDuration =
+            getTotalDuration();
+
+
+        if (totalDuration <= 0) {
+
+            return null;
+
+        }
+
+
+        const currentTimestamp =
+            Math.floor(
+                Date.now() / 1000
+            );
+
+
+        let position =
+            currentTimestamp %
+            totalDuration;
+
+
+        for (
+            let i = 0;
+            i < PLAYLIST.length;
+            i++
+        ) {
+
+            const item =
+                PLAYLIST[i];
+
+
+            const duration =
+                Number(item.duration);
+
+
+            if (position < duration) {
+
+                return {
+
+                    index: i,
+
+                    item: item,
+
+                    startFrom:
+                        Math.floor(position)
+
+                };
+
+            }
+
+
+            position -= duration;
+
+        }
+
+
+        return null;
+
+    }
+
+
+    /* ==========================================================
+       ПРОВЕРКА ЗАСТАВКИ
+       ========================================================== */
+
+    function shouldShowIntro() {
+
+        if (!INTRO_ENABLED) {
+
+            return false;
+
+        }
+
+
+        const now =
+            new Date();
+
+
+        const minutes =
+            now.getMinutes();
+
+
+        const seconds =
+            now.getSeconds();
+
+
+        return (
+            minutes %
+                INTRO_EVERY_MINUTES ===
+                0
+            &&
+            seconds <
+                INTRO_DURATION
+        );
+
+    }
+
+
+    /* ==========================================================
+       ОБНОВЛЕНИЕ ЭФИРА
+       ========================================================== */
+
+    function updateBroadcast() {
+
+        if (PLAYLIST.length === 0) {
+
+            broadcastStatus.textContent =
+                "Плейлист пуст";
+
+            currentTitle.textContent =
+                "Нет видео";
+
+            return;
+
+        }
+
+
+        /* ----------------------------
+           ЗАСТАВКА
+           ---------------------------- */
+
+        if (shouldShowIntro()) {
+
+            if (!introPlaying) {
+
+                introPlaying = true;
+
+                lastVideoId =
+                    "INTRO";
+
+
+                player.src =
+                    youtubeEmbedUrl(
+                        INTRO_ID,
+                        0
+                    );
+
+
+                currentTitle.textContent =
+                    "Заставка КрутТВ";
+
+
+                broadcastStatus.textContent =
+                    "📺 Заставка телеканала";
+
+
+                renderPlaylist(-1);
+
+            }
+
+
+            return;
+
+        }
+
+
+        introPlaying = false;
+
+
+        /* ----------------------------
+           ОСНОВНОЕ ВИДЕО
+           ---------------------------- */
+
+        const current =
+            getCurrentProgram();
+
+
+        if (!current) {
+
+            return;
+
+        }
+
+
+        const videoId =
+            current.item.id;
+
+
+        if (
+            lastVideoId !==
+            videoId
+        ) {
+
+            lastVideoId =
+                videoId;
+
+
+            player.src =
+                youtubeEmbedUrl(
+                    videoId,
+                    current.startFrom
+                );
+
+        }
+
+
+        currentTitle.textContent =
+            current.item.title;
+
+
+        broadcastStatus.textContent =
+            "🔴 КрутТВ сейчас в эфире";
+
+
+        currentTime.textContent =
+            "Позиция: " +
+            formatDuration(
+                current.startFrom
+            );
+
+
+        renderPlaylist(
+            current.index
+        );
+
+    }
+
+
+    /* ==========================================================
+       ЧАСЫ
+       ========================================================== */
+
+    function updateClock() {
+
+        clock.textContent =
+            new Date()
+                .toLocaleTimeString(
+                    "ru-RU"
+                );
+
+    }
+
+
+    /* ==========================================================
+       ЗВУК
+       ========================================================== */
+
+    soundBtn.addEventListener(
+        "click",
+        function() {
+
+            isMuted =
+                !isMuted;
+
+
+            if (
+                player.contentWindow
+            ) {
+
+                player.contentWindow.postMessage(
+                    JSON.stringify({
+
+                        event: "command",
+
+                        func:
+                            isMuted
+                                ? "mute"
+                                : "unMute",
+
+                        args: []
+
+                    }),
+                    "*"
+                );
+
+            }
+
+
+            soundBtn.textContent =
+                isMuted
+                    ? "🔇 Включить звук"
+                    : "🔊 Выключить звук";
+
+        }
+    );
+
+
+    /* ==========================================================
+       ПОЛНЫЙ ЭКРАН
+       ========================================================== */
+
+    fullscreenBtn.addEventListener(
+        "click",
+        async function() {
+
+            try {
+
+                if (
+                    !document.fullscreenElement
+                ) {
+
+                    await
+                        videoContainer
+                            .requestFullscreen();
+
+                }
+
+                else {
+
+                    await
+                        document
+                            .exitFullscreen();
+
+                }
+
+            }
+
+            catch (error) {
+
+                alert(
+                    "Не удалось открыть полный экран."
+                );
+
+            }
+
+        }
+    );
+
+
+    /* ==========================================================
+       ОБНОВЛЕНИЕ ЭФИРА
+       ========================================================== */
+
+    reloadBtn.addEventListener(
+        "click",
+        function() {
+
+            lastVideoId =
+                "";
+
+            introPlaying =
+                false;
+
+            updateBroadcast();
+
+        }
+    );
+
+
+    /* ==========================================================
+       ЗАПУСК
+       ========================================================== */
+
+    renderPlaylist();
+
+    updateBroadcast();
+
+    updateClock();
+
+
+    setInterval(
+        updateBroadcast,
+        1000
+    );
+
+
+    setInterval(
+        updateClock,
+        1000
+    );
+
+</script>
+
+</body>
+</html>
